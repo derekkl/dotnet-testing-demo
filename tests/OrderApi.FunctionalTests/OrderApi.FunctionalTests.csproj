@@ -16,7 +16,7 @@
   <!--
     Deliberately no ProjectReference to src/OrderApi here. Functional/E2E
     tests should only know the HTTP/JSON contract, the same as any other
-    real client of the API -- not its internal C# types. Responses are
+    real client of the API, not its internal C# types. Responses are
     parsed with System.Text.Json's JsonElement instead.
   -->
 
