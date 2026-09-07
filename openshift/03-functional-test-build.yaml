@@ -21,10 +21,10 @@ spec:
       # If you forked this repo, update uri (and ref, if not deploying from main) to point to your fork.
       uri: https://github.com/derekkl/dotnet-testing-demo.git
       ref: main
-    dockerfilePath: Dockerfile.functional-tests
   strategy:
     type: Docker
-    dockerStrategy: {}
+    dockerStrategy:
+      dockerfilePath: Dockerfile.functional-tests
   output:
     to:
       kind: ImageStreamTag
