@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: order-api-functional-test-
+  labels:
+    app: order-api
+    role: functional-test-run
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: order-api
+        role: functional-test-run
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: functional-tests
+          image: order-api-functional-tests:latest
+          env:
+            - name: ORDERAPI_BASE_URL
+              value: http://order-api:8080

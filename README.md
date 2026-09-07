@@ -67,17 +67,14 @@ This image contains *only* the functional test project — no reference to the a
 ### 4. Run the functional/E2E tests as a Job against the real deployed pod
 
 ```bash
-oc create job functional-tests-$(date +%s) \
-  --image=order-api-functional-tests:latest \
-  --env=ORDERAPI_BASE_URL=http://order-api:8080 \
-  -- dotnet test -c Release --no-build --logger "console;verbosity=normal"
+oc create -f openshift/04-functional-test-job.yaml
 ```
 
-`order-api:8080` here is the in-cluster Service DNS name — the Job runs inside the same namespace, so it reaches the real deployed pod over the real cluster network, not localhost. Each run needs a fresh Job name (hence the timestamp), since Job pod specs are immutable once created. Watch it:
+The manifest uses `generateName` rather than a fixed name, so each `oc create -f` produces a fresh Job (e.g. `order-api-functional-test-x7k2p`) — needed since Job pod specs are immutable once created, and you'll likely re-run this many times. `order-api:8080` in the manifest is the in-cluster Service DNS name; the Job runs inside the same namespace, so it reaches the real deployed pod over the real cluster network, not localhost. Watch it:
 
 ```bash
-oc get pods -l job-name --sort-by=.metadata.creationTimestamp
-oc logs -f job/<the-job-name-just-created>
+oc get pods -l role=functional-test-run --sort-by=.metadata.creationTimestamp
+oc logs -f <the-newest-pod-name>
 ```
 
 Clean up old test-run Jobs once you're done with them:
