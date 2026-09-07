@@ -6,6 +6,14 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0
 
+# OpenShift Jobs (like Deployments) run under the restricted SCC with an
+# arbitrary, randomly-assigned non-root UID that has no /etc/passwd entry.
+# The dotnet CLI can't resolve a home directory for that UID, so its
+# first-run configuration step tries to write to a fallback path it doesn't
+# have permission to and fails. Pointing DOTNET_CLI_HOME at /tmp -- always
+# writable regardless of UID -- avoids that entirely.
+ENV DOTNET_CLI_HOME=/tmp
+
 WORKDIR /src
 COPY tests/OrderApi.FunctionalTests/ ./tests/OrderApi.FunctionalTests/
 
