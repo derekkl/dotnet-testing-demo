@@ -1,0 +1,95 @@
+name: Test Pyramid
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Run unit tests
+        run: >
+          dotnet test tests/OrderApi.UnitTests
+          --logger "trx;LogFileName=unit-results.trx"
+          --results-directory ./test-results
+          --collect:"XPlat Code Coverage"
+
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-results
+          path: ./test-results
+
+  integration-tests:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Run integration tests
+        run: >
+          dotnet test tests/OrderApi.IntegrationTests
+          --logger "trx;LogFileName=integration-results.trx"
+          --results-directory ./test-results
+          --collect:"XPlat Code Coverage"
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: integration-test-results
+          path: ./test-results
+
+  functional-tests:
+    name: Functional / E2E tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      # Publish the real app -- functional tests run against this exact
+      # artifact as a separate process, not against source.
+      - name: Publish OrderApi
+        run: dotnet publish src/OrderApi -c Release -o ./publish
+
+      - name: Run functional tests
+        env:
+          ORDERAPI_DLL_PATH: ${{ github.workspace }}/publish/OrderApi.dll
+        run: >
+          dotnet test tests/OrderApi.FunctionalTests
+          --logger "trx;LogFileName=functional-results.trx"
+          --results-directory ./test-results
+
+      - name: Upload functional test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: functional-test-results
+          path: ./test-results

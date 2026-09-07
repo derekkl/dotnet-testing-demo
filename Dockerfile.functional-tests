@@ -1,0 +1,16 @@
+# A separate image containing ONLY the functional test project -- it has no
+# ProjectReference to src/OrderApi (see OrderApi.FunctionalTests.csproj), so
+# there's nothing to build here except the tests themselves. This image is
+# meant to run as an OpenShift Job against an already-deployed order-api
+# Service, with ORDERAPI_BASE_URL supplied at `oc create job` time.
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0
+
+WORKDIR /src
+COPY tests/OrderApi.FunctionalTests/ ./tests/OrderApi.FunctionalTests/
+
+WORKDIR /src/tests/OrderApi.FunctionalTests
+RUN dotnet restore
+RUN dotnet build -c Release --no-restore
+
+ENTRYPOINT ["dotnet", "test", "-c", "Release", "--no-build", "--logger", "console;verbosity=normal"]

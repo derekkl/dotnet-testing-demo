@@ -1,0 +1,33 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: order-api
+  labels:
+    app: order-api
+spec:
+  lookupPolicy:
+    local: true
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: order-api
+  labels:
+    app: order-api
+spec:
+  source:
+    type: Git
+    git:
+      # If you forked this repo, update uri (and ref, if not deploying from main) to point to your fork.
+      uri: https://github.com/derekkl/dotnet-testing-demo.git
+      ref: main
+    dockerfilePath: Dockerfile
+  strategy:
+    type: Docker
+    dockerStrategy: {}
+  output:
+    to:
+      kind: ImageStreamTag
+      name: order-api:latest
+  triggers:
+    - type: ConfigChange
